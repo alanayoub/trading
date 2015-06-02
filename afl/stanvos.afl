@@ -1,0 +1,141 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Stanvos                                                                                                           //
+//                                                                                                                   //
+// volume > 300k                                                                                                     //
+// RSI ticking up                                                                                                    //
+// price above 30 week MA (daily)                                                                                    //
+// ...                                                                                                               //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// @param {String} Period - "week" or "day"
+function IsInUptrend(Period) {
+    multiplier = 1;
+    if (Period == "week") multiplier = 5;
+    return EMA(C, 1  * multiplier) > EMA(C, 5  * multiplier) 
+        && EMA(C, 5  * multiplier) > EMA(C, 10 * multiplier)
+        && EMA(C, 10 * multiplier) > EMA(C, 15 * multiplier)
+        && EMA(C, 15 * multiplier) > EMA(C, 20 * multiplier);
+}
+
+// @param {Number} lookback - RSI lookback period
+// @param {Number} increase - Percentage increase
+// @param {Number} period   - Max bars the increase should span
+// @param {Number} max      - Current RSI max
+function RSIIsGood(Lookback, MinIncrease, Period, MaxValue) {
+    RSINow = RSIa(C, Lookback);
+    RSIOld = Ref(RSIa(C, Lookback), -Period);
+    PercentageIncrease = ((RSINow - RSIOld) / RSIOld) * 100;
+    _TRACE("RSI NOW: " + RSINow);
+    _TRACE("RSI OLD: " + RSIOld);
+    _TRACE("RSI PERCENTAGE INCREASE: " + PercentageIncrease);
+    return PercentageIncrease > MinIncrease
+       and RSINow < MaxValue;
+}
+
+// @param {Number} MinVolume   - Minimum volume for current bar
+// @param {Number} MinIncrease - Minimum percentage increase required
+// @param {Number} Lookback    - How far to lookback to get baseline average
+// @param {Number} Period      - How far to look back when checking increased volume
+function VolumeIsGood(MinVolume, MinIncrease, Lookback, Period) {
+    VolOld = Ref(MA(V, Lookback), -(Period + 1)); // Add one so we don't count the strong volume group
+    // Check volume increase percentage in each bar in the "Period".
+    // NumBarsOk will equal Period if all passed
+    NumBarsOk = 0;
+    for (i = 0; i < Period; i++) {
+        BarPercentageIncrease = ((Ref(V, -i) - VolOld) / VolOld) * 100;
+        NumBarsOk = IIf(BarPercentageIncrease > MinIncrease, NumBarsOk + 1, NumBarsOk);
+    }
+    return V > MinVolume AND IIf(NumBarsOk == Period, True, False);
+}
+
+function SellAtPercentageGain(CurrenPrice, PriceAtBuy, Percentage) {
+    return IIF((((CurrenPrice - PriceAtBuy) / PriceAtBuy) * 100) > Percentage, True, False);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Setup                                                                                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+_TRACE("!CLEAR!");
+SetTradeDelays(0, 0, 0, 0);
+
+MinPrice = 2;
+MaxPrice = 250;
+
+RSILookback = 14;
+RSIPercentMultiplier = 10;
+RSIMax = 60;
+RSICalcPeriod = 1;
+
+VolumeMinDaily = 300000;
+VolumePercentMultiplier = 50;
+VolumeLookback = 100;
+VolumeCalcPeriod = 1;
+
+StopATR = 2.5; //Optimize("stop ATR", 4, 1, 10, 1); // 4;
+StopPercentage = 2; //Optimize("stop Percentage", 6, 1, 10, 1); // 6;
+StopATRLookback = 14; //Optimize("stop ATR Lookback", 14, 1, 30, 1); // 14;
+
+_TRACE("Is in uptrend: " + IsInUptrend("week"));
+_TRACE("RSI is good: "   + RSIIsGood(RSILookback, RSIPercentMultiplier, RSICalcPeriod, RSIMax));
+_TRACE("Volume is good"  + VolumeIsGood(VolumeMinDaily, VolumePercentMultiplier, VolumeLookback, VolumeCalcPeriod));
+
+BuyPrice = C;
+SellPrice = C;
+_TRACE("BuyPrice: " + C);
+_TRACE("SellPrice: " + C);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Main                                                                                                              //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+PriceHistoryIsOk = C > MinPrice
+               AND C < MaxPrice
+               AND C > MA(C, 20)            // Above 20 MA (daily)
+               AND C > MA(C, 20 * 5)        // Above 20 MA (weekly)
+               AND MA(C, 20) > MA(C, 50)    // 20 MA above 50 MA
+               AND MA(C, 50) > MA(C, 200)   // 50 MA above 200 MA
+               AND IsInUptrend("week")      // Uptrend weekly
+               AND IsInUptrend("day");      // Uptrend daily
+RSIIsOk = RSIIsGood(RSILookback, RSIPercentMultiplier, RSICalcPeriod, RSIMax);
+VolumeIsOk = VolumeIsGood(VolumeMinDaily, VolumePercentMultiplier, VolumeLookback, VolumeCalcPeriod);
+
+// TODO: If there are more up bars then down bars, and price is larger now than before...
+// TODO: Sector in uptrend
+// TODO: price above $x
+// TODO: Spread not too high
+// TODO: Price below $150
+
+// TODO: Plot stuff
+//Plot(MA(Close, 20), "20 MA", colorBlue, styleLine, Null, Null); 
+
+// TODO: xATR trailing stop
+//       x% stop from in
+ApplyStop(stopTypeTrailing, stopModePoint, StopATR * ATR(StopATRLookback), True, True);
+ApplyStop(stopTypeLoss, stopModePercent, StopPercentage, True);
+
+Buy = PriceHistoryIsOk AND VolumeIsOk AND RSIIsOk;
+
+// Testing % gain selling
+Sell = SellAtPercentageGain(C, IIf(Buy, BuyPrice, 0), 2); // 0;
+
+_TRACE("Buy" + Buy);
+
+//AddColumn(roc(CLOSE, 14),"Rateofchange", 4.2);
+
+//	ExRem removes the extra signals that occur between
+//	the buy that enters a position and the sell that exits it.
+//	Comment out the ExRem to see the extra buy signals.
+//	Since the system is already in a long position,
+//	and the system is set by default to take only one position,
+//	the extra buy signals do not do anything.
+//Buy = ExRem(Buy,Sell);
+//Sell = ExRem(Sell,Buy);
