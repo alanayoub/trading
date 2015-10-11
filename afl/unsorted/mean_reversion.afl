@@ -1,0 +1,89 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// RSI with ATR filter                                                                                               //
+//                                                                                                                   //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Setup                                                                                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+OptimizerSetEngine("cmae"); // "cmae", "spso" or "trib"
+SetOption("MaxOpenPositions", 3);
+SetOption("ExtraColumnsLocation", 1);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Position                                                                                                          //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+SetOption("InitialEquity", 100000);
+//SetPositionSize(10000, spsValue);
+PositionSizePercentage = Optimize("PositionSizePercentage", 100, 1, 100, 1);
+SetPositionSize(PositionSizePercentage, spsPercentOfEquity); // spsValue
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Filters                                                                                                           //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ATR Filter
+ATRLB              = 8; //Optimize("ATRLB", 8, 2, 10, 1);
+ATRPercentRank     = 49; //Optimize("ATRPercentRank", 49, 1, 100, 1);
+ATRValueLowerLimit = 70; //Optimize("ATRValueLowerLimit", 70, 0, 95, 5);
+ATRValue           = ATR(ATRLB);
+ATRValuePR         = PercentRank(ATRValue, 100);
+ATRFilter = ATRValuePR >= ATRPercentRank;
+
+// Downtrend Filter
+//SlopeLB            = Optimize("SlopeLB", 65, 1, 100, 1);
+//TrendFilterValue   = Optimize("TrendFilterValue", -0.2, -1, 1, 0.1);
+//Slope              = LinRegSlope(Close, SlopeLB);
+//TrendFilter = Slope >= TrendFilterValue;
+
+DownTrendPeriod = Optimize("DownTrendPeriod", 50, 1, 100, 1);
+DownTrendAmount = Optimize("DownTrendAmount", 0, -100, 100, 1);
+DownTrend = ROC(C, DownTrendPeriod) < DownTrendAmount;
+TrendFilter = NOT DownTrend;
+Plot(ROC(C, DownTrendPeriod), "rateofchange", ColorRGB(150, 150, 150));
+Plot(TrendFilter, "TrendFilter", ColorRGB(0, 150, 150));
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Main                                                                                                              //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RSI2 = RSI(2);
+
+//Buy = RSI2 < 25;
+Buy = ATRFilter AND TrendFilter AND (RSI2 < 25);
+Sell = RSI2 > 75;
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Plots                                                                                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Plot(Slope, "Slope", ColorRGB(0, 150, 0));
+
+//Plot(C, "C", colorBlack, styleCandle);
+//Plot(RSI2, "RSI2", colorRed, styleLine | styleOwnScale);
+//Plot(ATRValue, "ATRValue", colorGreen, styleLine | styleOwnScale);
+//Plot(ATRValuePR, "ATRValuePR", colorBlue, styleLine | styleOwnScale);
+
+/* shapes = IIf(Buy, shapeUpArrow, shapeNone); */
+/* shapecolors = IIf(Buy, colorGreen, colorWhite); */
+/* PlotShapes(shapes, shapecolors); */

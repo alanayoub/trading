@@ -1,0 +1,45 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Price cross MA                                                                                                    //
+//                                                                                                                   //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Setup                                                                                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+SetOption("ExtraColumnsLocation", 1);
+SetOption("CommissionMode", 2); // $ per trade
+SetOption("CommissionAmount", 0);
+SetOption("InitialEquity", 100000);
+SetPositionSize(100000, spsValue);
+SetOption("MaxOpenPositions", 1);
+SetTradeDelays(0, 0, 0, 0);
+BuyPrice = C;
+SellPrice = C;
+
+LB1 = Optimize("LB1", 148, 1, 200, 1);
+LB2 = Optimize("LB2", 20, 1, 200, 1);
+
+MA1 = MA(C, LB1);
+MA2 = MA(C, LB2);
+
+Buy = C > MA1;
+Sell = Cross(MA2, C);
+
+buy = ExRem(buy, sell);
+sell = ExRem(sell, buy);
+
+// Plots
+Plot(C, "C", colorBlack, styleCandle);
+Plot(MA1, "IN MA", colorBlue, styleLine);
+Plot(MA2, "OUT MA", colorRed, styleLine);
+
+// Arrows
+shapes = Buy * shapeUpArrow + Sell * shapeDownArrow;
+Plot( Close, "Price", colorBlack, styleCandle );
+PlotShapes( shapes, IIf( Buy, colorGreen, colorRed ), 0, IIf( Buy, Low, High ) );

@@ -13,11 +13,54 @@
 function IsInUptrend(Period) {
     multiplier = 1;
     if (Period == "week") multiplier = 5;
-    return EMA(C, 1  * multiplier) > EMA(C, 5  * multiplier) 
+    return EMA(C, 1  * multiplier) > EMA(C, 5  * multiplier)
         && EMA(C, 5  * multiplier) > EMA(C, 10 * multiplier)
         && EMA(C, 10 * multiplier) > EMA(C, 15 * multiplier)
         && EMA(C, 15 * multiplier) > EMA(C, 20 * multiplier);
 }
+
+// @param {Number} MinBasingPeriod - days
+// @param {Number} MinVolumePercentageIncrease
+// @param {Number} MinPricePercentageIncrease
+// @param {Number} MaxPricePercentageIncrease
+// TODO: make sure MA is not going down (much) should be going sideways
+function IsBreakingOut(MinBasingPeriod, MinVolumePercentageIncrease, MinPricePercentageIncrease, MaxPricePercentageIncrease) {
+
+    // Overrides
+    MinBasingPeriod = 60;
+
+    ATRPercent = (ATR(MinBasingPeriod) / EMA(Close, MinBasingPeriod)) * 1000;
+
+    Slope = LinRegSlope(Close, MinBasingPeriod);
+
+    CloseMinusToday  = Ref(C, -1);
+    VolumeMinusToday = Ref(V, -1);
+
+    CloseAverage     = MA(CloseMinusToday, MinBasingPeriod);
+    VolumeAverage    = MA(VolumeMinusToday, MinBasingPeriod);
+
+    PricePercentageChange  = ((C - CloseAverage) / C) * 100;
+    VolumePercentageChange = ((V - VolumeAverage) / V) * 100;
+
+    Result = MinVolumePercentageIncrease < VolumePercentageChange
+         AND MinPricePercentageIncrease  < PricePercentageChange
+         AND MaxPricePercentageIncrease  > PricePercentageChange;
+
+    Slope = Slope * 1000;
+    StandardDev = StDev(Slope, MinBasingPeriod);
+
+    Plot(ATRPercent, "ATRPercent", ColorBlue);
+
+    Plot(Slope, "Slope", ColorRGB(0, 150, 0));
+//    Plot(MA(Slope, 20), "MA Slope", ColorRGB(100, 150, 100));
+
+    Plot(StandardDev, "StDev", ColorRGB(150, 0, 0));
+//    Plot(MA(StandardDev, 20), "MA StDev", ColorRGB(150, 100, 100));
+
+    return Result;
+}
+
+
 
 // @param {Number} lookback - RSI lookback period
 // @param {Number} increase - Percentage increase
@@ -27,11 +70,11 @@ function RSIIsGood(Lookback, MinIncrease, Period, MaxValue) {
     RSINow = RSIa(C, Lookback);
     RSIOld = Ref(RSIa(C, Lookback), -Period);
     PercentageIncrease = ((RSINow - RSIOld) / RSIOld) * 100;
-    _TRACE("RSI NOW: " + RSINow);
-    _TRACE("RSI OLD: " + RSIOld);
-    _TRACE("RSI PERCENTAGE INCREASE: " + PercentageIncrease);
+//    _TRACE("RSI NOW: " + RSINow);
+//    _TRACE("RSI OLD: " + RSIOld);
+//    _TRACE("RSI PERCENTAGE INCREASE: " + PercentageIncrease);
     return PercentageIncrease > MinIncrease
-       and RSINow < MaxValue;
+       AND RSINow < MaxValue;
 }
 
 // @param {Number} MinVolume   - Minimum volume for current bar
@@ -61,34 +104,37 @@ function SellAtPercentageGain(CurrenPrice, PriceAtBuy, Percentage) {
 //                                                                                                                   //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-_TRACE("!CLEAR!");
+//_TRACE("!CLEAR!");
 SetTradeDelays(0, 0, 0, 0);
 
-MinPrice = 2;
-MaxPrice = 250;
+PositionPercentage      = 10; //Optimize("position size", 10, 10, 75, 1);
 
-RSILookback = 14;
-RSIPercentMultiplier = 10;
-RSIMax = 60;
-RSICalcPeriod = 1;
+MinPrice                = 2;
+MaxPrice                = 250;
 
-VolumeMinDaily = 300000;
+RSILookback             = 14;
+RSIPercentMultiplier    = 10;
+RSIMax                  = 60;
+RSICalcPeriod           = 1;
+
+VolumeMinDaily          = 300000;
 VolumePercentMultiplier = 50;
-VolumeLookback = 100;
-VolumeCalcPeriod = 1;
+VolumeLookback          = 100;
+VolumeCalcPeriod        = 1;
 
-StopATR = 2.5; //Optimize("stop ATR", 4, 1, 10, 1); // 4;
-StopPercentage = 2; //Optimize("stop Percentage", 6, 1, 10, 1); // 6;
-StopATRLookback = 14; //Optimize("stop ATR Lookback", 14, 1, 30, 1); // 14;
+StopATR                 = 6; // Optimize("stop ATR", 4, 1, 10, 1); // 4;
+StopPercentage          = 1; // Optimize("stop Percentage", 6, 1, 10, 1); // 6;
+StopATRLookback         = 3; // Optimize("stop ATR Lookback", 14, 1, 30, 1); // 14;
 
-_TRACE("Is in uptrend: " + IsInUptrend("week"));
-_TRACE("RSI is good: "   + RSIIsGood(RSILookback, RSIPercentMultiplier, RSICalcPeriod, RSIMax));
-_TRACE("Volume is good"  + VolumeIsGood(VolumeMinDaily, VolumePercentMultiplier, VolumeLookback, VolumeCalcPeriod));
+//_TRACE("Is in uptrend: " + IsInUptrend("week"));
+//_TRACE("RSI is good: "   + RSIIsGood(RSILookback, RSIPercentMultiplier, RSICalcPeriod, RSIMax));
+//_TRACE("Volume is good: "  + VolumeIsGood(VolumeMinDaily, VolumePercentMultiplier, VolumeLookback, VolumeCalcPeriod));
+//_TRACE("Sector: " + SectorID(1));
 
 BuyPrice = C;
 SellPrice = C;
-_TRACE("BuyPrice: " + C);
-_TRACE("SellPrice: " + C);
+//_TRACE("BuyPrice: " + C);
+//_TRACE("SellPrice: " + C);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,16 +143,18 @@ _TRACE("SellPrice: " + C);
 //                                                                                                                   //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
 PriceHistoryIsOk = C > MinPrice
                AND C < MaxPrice
-               AND C > MA(C, 20)            // Above 20 MA (daily)
-               AND C > MA(C, 20 * 5)        // Above 20 MA (weekly)
-               AND MA(C, 20) > MA(C, 50)    // 20 MA above 50 MA
-               AND MA(C, 50) > MA(C, 200)   // 50 MA above 200 MA
-               AND IsInUptrend("week")      // Uptrend weekly
-               AND IsInUptrend("day");      // Uptrend daily
+               AND C > EMA(C, 20)             // Above 20 MA (daily)
+               AND C > EMA(C, 20 * 5)         // Above 20 MA (weekly)
+               AND EMA(C, 20) > EMA(C, 50)    // 20 MA above 50 MA
+               AND EMA(C, 50) > EMA(C, 200)   // 50 MA above 200 MA
+               AND IsInUptrend("week")        // Uptrend weekly
+               AND IsInUptrend("day");        // Uptrend daily
 RSIIsOk = RSIIsGood(RSILookback, RSIPercentMultiplier, RSICalcPeriod, RSIMax);
 VolumeIsOk = VolumeIsGood(VolumeMinDaily, VolumePercentMultiplier, VolumeLookback, VolumeCalcPeriod);
+*/
 
 // TODO: If there are more up bars then down bars, and price is larger now than before...
 // TODO: Sector in uptrend
@@ -115,19 +163,32 @@ VolumeIsOk = VolumeIsGood(VolumeMinDaily, VolumePercentMultiplier, VolumeLookbac
 // TODO: Price below $150
 
 // TODO: Plot stuff
-//Plot(MA(Close, 20), "20 MA", colorBlue, styleLine, Null, Null); 
+//Plot(MA(Close, 20), "20 MA", colorBlue, styleLine, Null, Null);
 
 // TODO: xATR trailing stop
 //       x% stop from in
-ApplyStop(stopTypeTrailing, stopModePoint, StopATR * ATR(StopATRLookback), True, True);
+//ApplyStop(stopTypeTrailing, stopModePoint, StopATR * ATR(StopATRLookback), True, True);
 ApplyStop(stopTypeLoss, stopModePercent, StopPercentage, True);
 
-Buy = PriceHistoryIsOk AND VolumeIsOk AND RSIIsOk;
+SetPositionSize(PositionPercentage, spsPercentOfEquity);
+
+//Buy = PriceHistoryIsOk AND VolumeIsOk AND RSIIsOk;
+
+OMinBasingPeriod             = 20*8; // Optimize("MinBasingPeriod", 5, 1, 50, 5);
+OMinVolumePercentageIncrease = 20; // Optimize("MinVolumePercentageIncrease", 50, 10, 100, 10);
+OMinPricePercentageIncrease  = 10; // Optimize("MinPricePercentageIncrease", 5, 10, 50, 5);
+OMaxPricePercentageIncrease  = 60; // Optimize("MaxPricePercentageIncrease", 50, 10, 200, 10);
+
+// 16, 60, 15, 40
+// 46, 20, 10, 60
+Buy = IsBreakingOut(OMinBasingPeriod, OMinVolumePercentageIncrease, OMinPricePercentageIncrease, OMaxPricePercentageIncrease)
+    AND V > 150000;
 
 // Testing % gain selling
-Sell = SellAtPercentageGain(C, IIf(Buy, BuyPrice, 0), 2); // 0;
+PercentGain = Optimize("PercentageGain", 2, 1, 50, 1);
+Sell = SellAtPercentageGain(C, IIf(Buy, BuyPrice, 0), PercentGain); // 0;
 
-_TRACE("Buy" + Buy);
+//_TRACE("Buy" + Buy);
 
 //AddColumn(roc(CLOSE, 14),"Rateofchange", 4.2);
 
@@ -137,5 +198,5 @@ _TRACE("Buy" + Buy);
 //	Since the system is already in a long position,
 //	and the system is set by default to take only one position,
 //	the extra buy signals do not do anything.
-//Buy = ExRem(Buy,Sell);
-//Sell = ExRem(Sell,Buy);
+Buy = ExRem(Buy,Sell);
+Sell = ExRem(Sell,Buy);

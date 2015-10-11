@@ -1,0 +1,121 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Buy after n Day Sequence                                                                                          //
+//                                                                                                                   //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Setup                                                                                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// pos size		dir		N		Hold		ptarget
+
+// ON MRTS-1-ETF
+
+// 100			0		1		2			0.2
+// 100			0		1		4			0.4
+
+// ON MRTS-2
+// 22			0		3		3			3.2
+
+
+OptimizerSetEngine("cmae"); // you can also use "spso" or "trib" here
+
+SetOption("ExtraColumnsLocation", 1);
+SetOption("CommissionMode", 2); // $ per trade
+SetOption("CommissionAmount", 0);
+SetOption("InitialEquity", 10000);
+
+PositionSizePercentage = Optimize("PositionSizePercentage", 100, 1, 100, 1);
+//SetPositionSize(PositionSizePercentage, spsPercentOfEquity); // spsValue
+
+SetOption("MaxOpenPositions", 1);
+SetTradeDelays(0, 0, 0, 0);
+BuyPrice = C;
+SellPrice = C;
+
+// Define a day as rising based on the closing price
+Rising = C > Ref(C, -1);
+Falling = C < Ref(C, -1);
+
+// Direction. 1 == Rising, 0 == Falling
+Direction = 0; //Optimize("Direction", 0, 0, 1, 1);
+
+// The number of days in the sequence
+N = Optimize("N", 2, 1, 20, 1);
+
+// Exit variables
+// Maximum holding period
+HoldDays = Optimize("HoldDays", 12, 1, 20, 1);
+
+// Profit target
+ProfitTarget = Optimize("ProfitTarget", 0.3, 0.1, 1, 0.1);
+
+// Detect an N day sequence
+if (Direction == 1) {
+    NDaySequence = Sum(Rising, N) == N;
+}
+else {
+    NDaySequence = Sum(Falling, N) == N;
+}
+
+// Moving average filter
+/*
+MALB1 = Optimize("Moving Average Filter", 20, 1, 200, 1);
+Filter1 = C > MA(C, MALB1);
+*/
+
+_TRACE("NDaySequence: " + NDaySequence);
+_TRACE("Direction: " + Direction);
+
+// ATR Filter
+/*
+ATRLB              = 8; //Optimize("ATRLB", 8, 2, 10, 1);
+ATRPercentRank     = 49; //Optimize("ATRPercentRank", 49, 1, 100, 1);
+ATRValueLowerLimit = 70; //Optimize("ATRValueLowerLimit", 70, 0, 95, 5);
+ATRValue           = ATR(ATRLB);
+ATRValuePR         = PercentRank(ATRValue, 100);
+ATRFilter = ATRValuePR >= ATRPercentRank;
+*/
+
+Buy = NDaySequence AND (O != C);
+Sell = 0;
+
+//buy = ExRem(buy, sell);
+//sell = ExRem(sell, buy);
+
+ApplyStop(stopTypeProfit, stopModePercent, ProfitTarget);
+ApplyStop(stopTypeNBar, stopModeBars, HoldDays);
+
+//ApplyStop(stopTypeTrailing, stopModePercent, ProfitTarget);
+
+
+// Plots
+Plot(C, "C", colorBlack, styleCandle);
+
+// Arrows
+shapes = IIf(Buy, shapeUpArrow, shapeNone);
+shapecolors = IIf(Buy, colorGreen, colorWhite);
+PlotShapes(shapes, shapecolors);
+
+
+/*
+
+// Plots
+Plot(C, "C", colorBlack, styleCandle);
+Plot(MA1, "IN MA", colorBlue, styleLine);
+Plot(MA2, "OUT MA", colorRed, styleLine);
+
+// Arrows
+shapes = Buy * shapeUpArrow + Sell * shapeDownArrow;
+Plot( Close, "Price", colorBlack, styleCandle );
+PlotShapes( shapes, IIf( Buy, colorGreen, colorRed ), 0, IIf( Buy, Low, High ) );
+*/
+
+
+
+

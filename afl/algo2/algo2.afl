@@ -1,0 +1,65 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Profit target                                                                                                     //
+//                                                                                                                   //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Mode                                                                                                              //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+mode_all   = 1;
+mode_fixed = 0;
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Optimizations                                                                                                     //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+PositionSizePercentage = Optimize("Position Size Percentage", 100, 1, 100, 1);
+ProfitTarget           = Optimize("Profit Percent", 0.01, 0.001, 1, 0.001);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Setup                                                                                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+OptimizerSetEngine("cmae"); // "spso" or "trib"
+SetTradeDelays(0, 0, 0, 0);
+
+SetOption("ExtraColumnsLocation", 1);
+SetOption("CommissionMode", 0); // 0 = portfolio manager commission table;
+SetOption("InitialEquity", 10000);
+SetOption("MaxOpenPositions", 1);
+//SetOption("ActivateStopsImmediately", True); // Intraday
+
+if (mode_all) {
+    SetPositionSize(PositionSizePercentage, spsPercentOfEquity);
+}
+if (mode_fixed) {
+    SetPositionSize(5000, spsValue);
+}
+
+Slippage = 0.1; // Adding 10c to buy price to simulate slippage both ways
+//BuyPrice = Ref(C, -1); // yesterdays close
+RoundLotSize = 1;
+
+BuyPrice = O + Slippage;
+
+dn = DateNum(); 
+tn = TimeNum();
+newDay = dn != Ref(dn, -1);
+afterNoon = tn > 100000;
+eod = tn > 110000;
+Buy = newday AND afterNoon; 
+Sell = eod;
+
+//ApplyStop(stopTypeNBar, stopModeBars, 1);
+//ApplyStop(stopTypeTrailing, stopModePercent, ProfitTarget, True, True);

@@ -1,0 +1,42 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Profit target                                                                                                     //
+//                                                                                                                   //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                   //
+// Setup                                                                                                             //
+//                                                                                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//OptimizerSetEngine("cmae"); // "spso" or "trib"
+
+SetOption("ExtraColumnsLocation", 1);
+SetOption("CommissionMode", 2); // $ per trade
+SetOption("CommissionAmount", 1);
+SetOption("InitialEquity", 10000);
+
+//PositionSizePercentage = Optimize("PositionSizePercentage", 100, 1, 100, 1);
+//SetPositionSize(PositionSizePercentage, spsPercentOfEquity);
+SetPositionSize(5000, spsValue);
+
+SetOption("MaxOpenPositions", 1);
+SetOption("ActivateStopsImmediately", True);
+SetTradeDelays(0, 0, 0, 0);
+
+/*
+ShortPrice = O;
+CoverPrice = C;
+Short = 1;
+Cover = 0;
+*/
+
+BuyPrice = O;
+Buy = 1;
+Sell = 0;
+
+ApplyStop(stopTypeTrailing, stopModePercent, Optimize("Profit Percent", 0.01, 0.001, 1, 0.001), True, True);
+ApplyStop(stopTypeNBar, stopModeBars, 1);

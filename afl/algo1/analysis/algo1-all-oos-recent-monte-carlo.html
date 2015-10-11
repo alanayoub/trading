@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><META content="IE=5.0000" http-equiv="X-UA-Compatible">
+<TITLE>long_short - Out-of-Sample summary - Backtest Report</TITLE>
+<META content="text/html; charset=windows-1252" http-equiv=Content-Type>
+<STYLE>BODY {
+	FONT-SIZE: 8pt; FONT-FAMILY: Tahoma,Arial,Helvetica,Sans Serif
+}
+TD {
+	FONT-SIZE: 8pt; WHITE-SPACE: nowrap; TEXT-ALIGN: right
+}
+TH {
+	FONT-SIZE: 8pt; FONT-WEIGHT: normal; TEXT-ALIGN: left
+}
+.CH {
+	FONT-WEIGHT: bold; TEXT-ALIGN: right
+}
+.CHL {
+	FONT-WEIGHT: bold; TEXT-ALIGN: left
+}
+.BIG {
+	FONT-SIZE: 10pt; FONT-WEIGHT: bold; TEXT-ALIGN: center
+}
+.TAB {
+	FONT-SIZE: 10pt; TEXT-ALIGN: center; text-color: #CCCCCC
+}
+.SELTAB {
+	FONT-SIZE: 10pt; FONT-WEIGHT: bold; TEXT-ALIGN: center; text-color: #000000
+}
+.good {
+	COLOR: #006600
+}
+.bad {
+	COLOR: #880000
+}
+.neut {
+	COLOR: #000088
+}
+A:active {
+	BACKGROUND-COLOR: #ddddff
+}
+</STYLE>
+
+<SCRIPT>
+var curPart = 0;
+function showPart( i )
+{
+	 document.getElementById("part" + curPart ).style.display = "none";
+	 document.getElementById("part" + i ).style.display = "";
+	 curPart = i;
+}
+</SCRIPT>
+
+<META name=GENERATOR content="MSHTML 11.00.9600.17842"></HEAD>
+<BODY>
+<DIV align=center><FONT class=TAB><A 
+href="file:///C:/Program%20Files/AmiBroker/Reports/long_short%20-%20Out-of-Sample%20summary-20150722125539874/stats.html">Statistics</A> 
+| <A 
+href="file:///C:/Program%20Files/AmiBroker/Reports/long_short%20-%20Out-of-Sample%20summary-20150722125539874/charts.html">Charts</A> 
+| <A 
+href="file:///C:/Program%20Files/AmiBroker/Reports/long_short%20-%20Out-of-Sample%20summary-20150722125539874/trades.html">Trades</A> 
+| <A 
+href="file:///C:/Program%20Files/AmiBroker/Reports/long_short%20-%20Out-of-Sample%20summary-20150722125539874/formula.html">Formula</A> 
+| <A 
+href="file:///C:/Program%20Files/AmiBroker/Reports/long_short%20-%20Out-of-Sample%20summary-20150722125539874/settings.html">Settings</A> 
+| <A 
+href="file:///C:/Program%20Files/AmiBroker/Reports/long_short%20-%20Out-of-Sample%20summary-20150722125539874/symbols.html">Symbols</A> 
+| <A 
+href="file:///C:/Program%20Files/AmiBroker/Reports/long_short%20-%20Out-of-Sample%20summary-20150722125539874/montecarlo.html"><FONT 
+class=SELTAB>Monte Carlo</FONT></A></FONT></DIV><BR>
+<TABLE cellSpacing=0 cellPadding=2 width="100%">
+  <TBODY>
+  <TR bgColor=#dddddd>
+    <TH class=BIG colSpan=5>Monte Carlo</TH></TR></TBODY></TABLE>
+<TABLE cellSpacing=3 width="100%">
+  <TBODY>
+  <TR>
+    <TH>&nbsp;</TH>
+    <TH class=CH>Final Equity</TH>
+    <TH class=CH>Annual Return</TH>
+    <TH class=CH>Max. Drawdown $</TH>
+    <TH class=CH>Max. Drawdown %</TH>
+    <TH class=CH>Lowest Eq.</TH></TR>
+  <TR>
+    <TH>1%</TH>
+    <TD>2644734</TD>
+    <TD>205.68%</TD>
+    <TD>113</TD>
+    <TD>0.02%</TD>
+    <TD>9908</TD></TR>
+  <TR>
+    <TH>5%</TH>
+    <TD>2752964</TD>
+    <TD>208.15%</TD>
+    <TD>120</TD>
+    <TD>0.04%</TD>
+    <TD>9977</TD></TR>
+  <TR>
+    <TH>10%</TH>
+    <TD>2805841</TD>
+    <TD>209.33%</TD>
+    <TD>129</TD>
+    <TD>0.05%</TD>
+    <TD>10000</TD></TR>
+  <TR>
+    <TH>25%</TH>
+    <TD>2916867</TD>
+    <TD>211.74%</TD>
+    <TD>132</TD>
+    <TD>0.09%</TD>
+    <TD>10000</TD></TR>
+  <TR>
+    <TH>50%</TH>
+    <TD>3042457</TD>
+    <TD>214.39%</TD>
+    <TD>152</TD>
+    <TD>0.16%</TD>
+    <TD>10000</TD></TR>
+  <TR>
+    <TH>75%</TH>
+    <TD>3191480</TD>
+    <TD>217.41%</TD>
+    <TD>179</TD>
+    <TD>0.32%</TD>
+    <TD>10000</TD></TR>
+  <TR>
+    <TH>90%</TH>
+    <TD>3315122</TD>
+    <TD>219.84%</TD>
+    <TD>209</TD>
+    <TD>0.57%</TD>
+    <TD>10000</TD></TR>
+  <TR>
+    <TH>95%</TH>
+    <TD>3393845</TD>
+    <TD>221.35%</TD>
+    <TD>226</TD>
+    <TD>0.76%</TD>
+    <TD>10000</TD></TR>
+  <TR>
+    <TH>99%</TH>
+    <TD>3577519</TD>
+    <TD>224.76%</TD>
+    <TD>284</TD>
+    <TD>1.15%</TD>
+    <TD>10000</TD></TR></TBODY></TABLE>
+<P></P>
+<P><FONT class=BIG>MC Min/Max Equity</FONT></P>
+<P align=center><IMG src="algo1-all-oos-recent-monte-carlo_files/mc1.png"></P>
+<P><FONT class=BIG>MC Final Equity</FONT></P>
+<P align=center><IMG src="algo1-all-oos-recent-monte-carlo_files/mc2.png"></P>
+<P><FONT class=BIG>MC CAR</FONT></P>
+<P align=center><IMG src="algo1-all-oos-recent-monte-carlo_files/mc3.png"></P>
+<P><FONT class=BIG>MC Drawdown %</FONT></P>
+<P align=center><IMG src="algo1-all-oos-recent-monte-carlo_files/mc4.png"></P>
+<P><FONT class=BIG>MC Drawdown $</FONT></P>
+<P align=center><IMG src="algo1-all-oos-recent-monte-carlo_files/mc5.png"></P>
+<P><FONT class=BIG>MC Lowest Equity</FONT></P>
+<P align=center><IMG 
+src="algo1-all-oos-recent-monte-carlo_files/mc6.png"></P></BODY></HTML>
